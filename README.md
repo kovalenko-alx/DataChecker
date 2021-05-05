@@ -31,13 +31,15 @@ At the same time testing accuracy rapidly reduces, when training set is less tha
 
 4. call the function:
 
-`singleDistributionTest(path_in='./data',
+```singleDistributionTest(path_in='./data',
                         path_out='./outputs',
                         adjusted_pvalue=False,
                         plot_all=False,
                         plot_legend = False
                         num_fractions = 10,
-                        min_fraction = 0.1)`
+                        min_fraction = 0.1)
+
+```
                         
  5. see if the p-value is flat and ideally near 0 on the beginning of the plot. Otherwise the dataset is most likely too small and/or unbalanced.
 
