@@ -31,7 +31,8 @@ At the same time testing accuracy rapidly reduces, when training set is less tha
 
 4. call the function:
 
-```singleDistributionTest(path_in='./data',
+```
+singleDistributionTest(path_in='./data',
                         path_out='./outputs',
                         adjusted_pvalue=False,
                         plot_all=False,
