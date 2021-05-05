@@ -25,7 +25,9 @@ At the same time testing accuracy rapidly reduces, when training set is less tha
 
 2. import single distribution test` (double distribution is still under construction):
 
-`from dataCheck import singleDistributionTest`
+```
+from dataCheck import singleDistributionTest
+```
 
 3. place csv. file in data folder or set `path_in` and `path_out` parameters
 
@@ -39,7 +41,6 @@ singleDistributionTest(path_in='./data',
                         plot_legend = False
                         num_fractions = 10,
                         min_fraction = 0.1)
-
 ```
                         
  5. see if the p-value is flat and ideally near 0 on the beginning of the plot. Otherwise the dataset is most likely too small and/or unbalanced.
