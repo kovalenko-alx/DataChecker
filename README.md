@@ -18,3 +18,26 @@ As an example for [MNIST](http://yann.lecun.com/exdb/mnist/) dataset null hypoth
 At the same time testing accuracy rapidly reduces, when training set is less than 70%:
 
 ![image info](./figures/fraction_accuracy.png)
+
+### How to use:
+
+1. clone this repo
+
+2. import single distribution test` (double distribution is still under construction):
+
+`from dataCheck import singleDistributionTest`
+
+3. place csv. file in data folder or set `path_in` and `path_out` parameters
+
+4. call the function:
+
+`singleDistributionTest(path_in='./data',
+                        path_out='./outputs',
+                        adjusted_pvalue=False,
+                        plot_all=False,
+                        plot_legend = False
+                        num_fractions = 10,
+                        min_fraction = 0.1)`
+                        
+ 5. see if the p-value is flat and ideally near 0 on the beginning of the plot. Otherwise the dataset is most likely too small and/or unbalanced.
+
