@@ -148,25 +148,29 @@ def singleDistributionTest(path_in='./data',
         plt.show()
         
         
-def doubleDistributionTest(df1, df2, path_in='./data', path_out='./outputs'):
+def doubleDistributionTestTry(df1, df2, iterations=50, path_in='../data', path_out='../outputs'):
     
-    fractions= np.linspace(1.0, 0.1, num=10)
-    
-    mypath = path_in
     numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
     
-    dfs = []
-
-    for f in [df1, df2]:
+    df_1 = pd.read_csv(path_in + '/' + df1)
+    df_1 = df_1.dropna()
+    df_1 = df_1.select_dtypes(include=numerics)
+    
+    df_2 = pd.read_csv(path_in + '/' + df2)
+    df_2 = df_2.dropna()
+    df_2 = df_2.select_dtypes(include=numerics)
+    
+    if len(df1) < len(df2):
+        small_df, big_df = df_1, df_2
         
-        df = pd.read_csv(mypath + '/' + f)
-        df = df.dropna()
-        df = df.select_dtypes(include=numerics)
-
-        dfs.append(df)
-
-    if len(dfs[0]) < 5000:
-        alpha = 0.05/(np.sqrt(((len(dfs[0]) + len(dfs[0]))/(len(dfs[0]) * len(dfs[0])))))
+    else:
+        small_df, big_df = df_2, df_1
+        
+    print('small: ', len(small_df))
+    print('big: ', len(big_df))
+        
+    if len(small_df) < 5000:
+        alpha = 0.05/(np.sqrt(((len(small_df) + len(small_df))/(len(small_df) * len(small_df)))))
     else:
         alpha = 1.037
         
@@ -174,68 +178,33 @@ def doubleDistributionTest(df1, df2, path_in='./data', path_out='./outputs'):
     pvals_fractions = []
     ks_vals = []
 
-    for f in fractions:
-        df_frac = dfs[1].sample(frac=f)    
+    for f in range(iterations):
+        df_frac = big_df.sample(frac=(len(small_df)/len(big_df)))    
 
         stats = []
         pvals = []
-        for c in dfs[1].columns:
-            kst = ks_2samp(dfs[0][c].values, df_frac[c].values, mode='asymp')
-            stats.append(kst[0])
-            pvals.append(1 - kst[1])
+        for c in big_df.columns:
+            kst = ks_2samp(small_df[c].values, df_frac[c].values, mode='asymp')
+            
+            if kst[1] < 1:
+                stats.append(kst[0])
+                pvals.append(1 - kst[1])
 
-        stats_fractions.append(stats)
-        pvals_fractions.append(pvals)
-        ks_val = alpha*(np.sqrt(((len(df_frac) + len(dfs[0]))/(len(df_frac) * len(dfs[0])))))
+        stats_fractions.append(np.mean(stats))
+        pvals_fractions.append(np.mean(pvals))
+        ks_val = alpha*(np.sqrt(((len(small_df) + len(small_df))/(len(small_df) * len(small_df)))))
         ks_vals.append(ks_val)
-
-
-    stats_fractions = np.asarray(stats_fractions)
-    pvals_fractions = np.asarray(pvals_fractions)
-
-    for i,v in enumerate(dfs[0].columns):
-        plt.plot(stats_fractions[:, i])
-        plt.xticks(range(10), [np.round(f, 1) for f in fractions])
-        #plt.hlines(0.05, colors='r', linestyles='dashed', xmin=0.0, xmax=8.0)
-        plt.title(df1+' KS stats all')
-        if len(dfs[0].columns) < 10:
-            plt.legend(dfs[0].columns)
-    plt.plot(ks_vals, color='r', linestyle = 'dotted')
-    plt.savefig(path_out+'/'+df1+' KS stats all'+'.pdf', bbox_inches='tight')
-    plt.show()
-
-    for i,v in enumerate(dfs[0].columns):
-        plt.plot(pvals_fractions[:, i])
-        plt.xticks(range(10), [np.round(f, 1) for f in fractions])
-        #plt.yscale('log')
-        plt.title(df1+' pvals all')
-        if len(dfs[0].columns) < 10:
-            plt.legend(dfs[0].columns)
-    plt.hlines(0.05, colors='r', linestyles='dotted', xmin=0.0, xmax=9.0)
-    plt.savefig(path_out+'/'+df1+' pvals all'+'.pdf', bbox_inches='tight')
-    plt.show()
-
-    stats_mean = np.mean(stats_fractions, axis=1)
-    pvals_mean = np.mean(pvals_fractions, axis=1)
-
-    plt.plot(stats_mean)
-    plt.plot(ks_vals, color='r', linestyle = 'dotted')
-    plt.xticks(range(10), [np.round(f, 1) for f in fractions])
-    plt.title(df1 + ' KS stats mean')
-    plt.savefig(path_out+'/'+ df1+ ' KS stats mean'+'.pdf', bbox_inches='tight')
-    plt.show()
     
-    kneedle = KneeLocator(stats_mean, range(10), S=1.0, curve='convex', direction='increasing')
-    kneedle.plot_knee_normalized()
+    #return stats_fractions, pvals_fractions
+
+    sns.kdeplot(pvals_fractions)
+    plt.title('p-values distribution')
+    plt.vlines(0.05, colors='r', linestyles='dotted')
+    plt.savefig(path_out+'/P-vals distribution'+'.pdf', bbox_inches='tight')
     plt.show()
 
-    plt.plot(pvals_mean)
-    plt.xticks(range(10), [np.round(f, 1) for f in fractions])
-    plt.title(df1 + ' p-values mean')
-    plt.hlines(0.05, colors='r', linestyles='dotted', xmin=0.0, xmax=9.0)
-    plt.savefig(path_out+'/'+df1+' KS stats mean'+'.pdf', bbox_inches='tight')
-    plt.show()
-    
-    kneedle = KneeLocator(pvals_mean, range(10), S=1.0, curve='convex', direction='increasing')
-    kneedle.plot_knee_normalized()
+    sns.kdeplot(stats_fractions)
+    plt.title('KS-stats distribution')
+    #plt.vlines(0.05, colors='r', linestyles='dotted')
+    plt.savefig(path_out+'/KS-stats distribution'+'.pdf', bbox_inches='tight')
     plt.show()
